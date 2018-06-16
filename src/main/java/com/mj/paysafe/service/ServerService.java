@@ -4,14 +4,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.mj.paysafe.model.Server;
 
+/**
+ * @author Malay Patel
+ *
+ */
 @Service
 public class ServerService {
 
+    private static Logger logger = LoggerFactory.getLogger(ServerService.class);
+	
 	ServerMonitoring sm = new ServerMonitoring();
 	Server server = new Server();
 	Thread t1 = new Thread(sm);
@@ -21,16 +29,74 @@ public class ServerService {
 	public ServerService() {
 	}
 
-	public void startMonitoring(long interval) {
+	/**
+	 * Start Server monitoring
+	 * 
+	 * @param url
+	 * @param interval
+	 */
+	public void startMonitoring(String url, long interval) {
+		sm.setServerUrl(url);
 		sm.setSleepInterval(interval);
 		sm.setExecuteThread(true);
 		t1.start();
-
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public void stopMonitoring() {
 		sm.setExecuteThread(false);
 		t1.stop();
+	}
+
+	/**
+	 * Validate Parameters 
+	 * 
+	 * @param url
+	 */
+	public void validateParams(String url) 
+	{
+		if(url == null || url.isEmpty())
+		{
+			logger.error("url is required");
+			throw new URLNotFoundException("url is required");
+		}
+
+		if(!isValidURL(url))
+		{
+			logger.error("Invalid url value");
+			throw new URLNotFoundException("Invalid url value");
+		}
+		
+		if(!isExists(url))
+		{
+			logger.error("url does not exist");
+			throw new URLNotFoundException("url does not exist");
+		}
+	}
+
+	/**
+	 * Check whether URL exists or not.
+	 * 
+	 * @param url
+	 * @return
+	 */
+	private boolean isExists(String url) {
+		return true;
+	}
+
+	/**
+	 * Verify if URL is valid or not
+	 * 
+	 * @param url
+	 * @return
+	 */
+	private boolean isValidURL(String url) {
+		// TODO Auto-generated method stub
+		String regex = "[(http(s)?):\\/\\/(www\\.)?a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)";
+		
+		return url.matches(regex);
 	}
 
 	public String getServerStatus() {
@@ -53,10 +119,23 @@ public class ServerService {
 		return server.getStopTime();
 	}
 
+	/**
+	 * @author Malay Patel
+	 *
+	 */
 	protected class ServerMonitoring implements Runnable {
+		public static final String READY = "READY";
 		long sleepInterval = 0;
 		boolean executeThread = false;
-		private String serverUrl = "PaySafe API Server";
+		private String serverUrl = null;
+
+		public String getServerUrl() {
+			return serverUrl;
+		}
+
+		public void setServerUrl(String serverUrl) {
+			this.serverUrl = serverUrl;
+		}
 
 		public boolean isExecuteThread() {
 			return executeThread;
@@ -75,13 +154,16 @@ public class ServerService {
 		}
 
 		@Override
-		public void run() {
+		public void run() 
+		{
 
-			while (executeThread) {
+			while (executeThread) 
+			{
 				try {
 					// Request to get status.
-					this.getServerStatus();
-
+					String serverStatus = this.getServerStatus();
+					this.collectServerStatus(serverStatus);
+					
 					Thread.sleep(sleepInterval);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -90,34 +172,56 @@ public class ServerService {
 			}
 		}
 
-		protected void getServerStatus() {
-			final String uri = "https://api.test.paysafe.com/accountmanagement/monitor";
+		protected String getServerStatus() 
+		{
+			// final String uri = "https://api.test.paysafe.com/accountmanagement/monitor";
 
 			RestTemplate restTemplate = new RestTemplate();
-			Server result = restTemplate.getForObject(uri, Server.class);
+			Server result = restTemplate.getForObject(serverUrl, Server.class);
 
 			String serverStatus = result.getStatus();
 
 			System.out.println("Server Status: " + serverStatus);
-			if (serverStatus.equals("READY")) {
-				if (key == 1) {
+			return serverStatus;
+		}
+		
+		protected void collectServerStatus(String serverStatus)
+		{
+			if (serverStatus.equals(READY)) 
+			{
+				if (key == 1)
+				{
 					Server request = new Server(serverUrl, serverStatus, new Date(), null, sleepInterval);
 					serverMonitoring.put(key, request);
 					key++;
-				} else if (key > 1) {
+				} 
+				else if (key > 1) 
+				{
 					Server previousRequest = serverMonitoring.get(key - 1);
 
 					// Server Status other than 'READY'
-					if (previousRequest.getStopTime() != null) {
+					if (!previousRequest.getStatus().equals(READY) 
+							&& previousRequest.getStopTime() != null) 
+					{
 						Server request = new Server(serverUrl, serverStatus, new Date(), null, sleepInterval);
 						serverMonitoring.put(key, request);
 						key++;
-
 					}
 				}
-			} else {
-				Server previousRequest = serverMonitoring.get(key - 1);
-				previousRequest.setStopTime(new Date());
+			} 
+			else 
+			{
+				if(key == 1)
+				{
+					Server request = new Server(serverUrl, serverStatus, null, new Date(), sleepInterval);
+					serverMonitoring.put(key, request);
+					key++;
+				}
+				else if(key > 1)
+				{
+					Server previousRequest = serverMonitoring.get(key - 1);
+					previousRequest.setStopTime(new Date());
+				}
 			}
 		}
 	}

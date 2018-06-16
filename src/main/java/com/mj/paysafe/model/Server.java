@@ -2,25 +2,29 @@ package com.mj.paysafe.model;
 
 import java.util.Date;
 
+/**
+ * @author Malay Patel
+ *
+ */
 public class Server {
 
 	String serverUrl;
 	String status;
 	Date startTime;
 	Date stopTime;
-	long intervalField;
+	long interval;
 
 	public Server() {
 		super();
 	}
 
-	public Server(String serverUrl, String status, Date startTime, Date stopTime, long intervalField) {
+	public Server(String serverUrl, String status, Date startTime, Date stopTime, long interval) {
 		super();
 		this.serverUrl = serverUrl;
 		this.status = status;
 		this.startTime = startTime;
 		this.stopTime = stopTime;
-		this.intervalField = intervalField;
+		this.interval = interval;
 	}
 
 	public String getServerUrl() {
@@ -31,12 +35,12 @@ public class Server {
 		this.serverUrl = serverUrl;
 	}
 
-	public long getIntervalField() {
-		return intervalField;
+	public long getInterval() {
+		return interval;
 	}
 
-	public void setIntervalField(long intervalField) {
-		this.intervalField = intervalField;
+	public void setInterval(long interval) {
+		this.interval = interval;
 	}
 
 	public String getStatus() {
