@@ -6,9 +6,9 @@ Below are the Steps to run the rest Api and the touch point URLs for it.
 1. Checkout the Git project and import into STS Suite.
 2. Build the project and execute it as Spring Boot Application.
 3. PaySafe API monitoring can be started using below URL from Postman or any other Rest URL Test Client with POST method.
-  - http://localhost:8080/server/status?interval=2000&url=start
+  - http://localhost:8080/server/status?interval=2000&url=https://api.test.paysafe.com/accountmanagement/monitor
   - interval is the interval in milliseconds
-  - url is the value whether to START or STOP monitoring the Pay Safe API server.
+  - url is the value of server URL for monitoring the Pay Safe API server. Test URL used is https://api.test.paysafe.com/accountmanagement/monitor .
   
 4. Below URL can be used to monitor STOP with POST method:
   - http://localhost:8080/server/status?interval=2000&url=stop
