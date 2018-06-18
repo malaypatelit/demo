@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mj.paysafe.model.Server;
@@ -37,13 +38,14 @@ public class ServerController {
 	 * @param interval set interval for the request to the url
 	 */
 	@RequestMapping(path="/server/status", method=RequestMethod.POST)
-	public void startOrStopMonitoringServer(@Valid @RequestParam String url,
+	@ResponseBody
+	public String startOrStopMonitoringServer(@Valid @RequestParam String url,
 											@Valid @RequestParam long interval)
 	{
 		serverService.validateParams(url);
 		
 		logger.info("Start/Stop Monitoring the server on given URL");
-		serverService.startMonitoring(url, interval);
+		return serverService.startMonitoring(url, interval);
 	}
 
 	/**
@@ -52,6 +54,7 @@ public class ServerController {
 	 * @return Server Up and Down Time Results as JSON objects array
 	 */
 	@RequestMapping(path="/server/result", method=RequestMethod.GET )
+	@ResponseBody
 	public Map<Integer, Server> getMonitoringResult()
 	{
 		Map<Integer, Server> results = new HashMap<>();
