@@ -35,19 +35,30 @@ public class ServerService {
 	 * @param url
 	 * @param interval
 	 */
-	public void startMonitoring(String url, long interval) {
-		sm.setServerUrl(url);
-		sm.setSleepInterval(interval);
-		sm.setExecuteThread(true);
-		t1.start();
+	public void startMonitoring(String url, long interval) 
+	{
+		if(sm.getServerUrl() != null && sm.getServerUrl().equals(url))
+		{
+			stopMonitoring();
+		}
+		else
+		{
+			sm.setServerUrl(url);
+			sm.setSleepInterval(interval);
+			sm.setExecuteThread(true);
+			t1.start();
+		}
 	}
 
 	/**
-	 * @deprecated
+	 * Stop Server Monitoring
+	 *  
 	 */
 	public void stopMonitoring() {
 		sm.setExecuteThread(false);
 		t1.stop();
+		sm.setServerUrl(null);
+		sm.setSleepInterval(0);
 	}
 
 	/**
