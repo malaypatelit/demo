@@ -22,7 +22,7 @@ public class ServerService {
 	
 	ServerMonitoring sm = new ServerMonitoring();
 	Server server = new Server();
-	Thread t1 = new Thread(sm);
+	Thread t1 = null;
 	Map<Integer, Server> serverMonitoring = new HashMap<>();
 	public Integer key = 1;
 
@@ -46,6 +46,7 @@ public class ServerService {
 			sm.setServerUrl(url);
 			sm.setSleepInterval(interval);
 			sm.setExecuteThread(true);
+			t1 = new Thread(sm);
 			t1.start();
 		}
 	}
