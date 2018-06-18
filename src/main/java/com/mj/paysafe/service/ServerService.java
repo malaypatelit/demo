@@ -23,7 +23,7 @@ public class ServerService {
 	ServerMonitoring sm = new ServerMonitoring();
 	Server server = new Server();
 	Thread t1 = null;
-	Map<Integer, Server> serverMonitoring = new HashMap<>();
+	Map<Integer, Server> serverMonitoringResults = new HashMap<>();
 	public Integer key = 1;
 
 	public ServerService() {
@@ -34,12 +34,15 @@ public class ServerService {
 	 * 
 	 * @param url
 	 * @param interval
+	 * @return 
 	 */
-	public void startMonitoring(String url, long interval) 
+	public String startMonitoring(String url, long interval) 
 	{
 		if(sm.getServerUrl() != null && sm.getServerUrl().equals(url))
 		{
 			stopMonitoring();
+			logger.info("Monitoring Stopped");
+			return "Monitoring Stopped";
 		}
 		else
 		{
@@ -49,6 +52,9 @@ public class ServerService {
 			t1 = new Thread(sm);
 			t1.start();
 		}
+		
+		logger.info("Monitoring Started");
+		return "Monitoring Started";
 	}
 
 	/**
@@ -205,19 +211,19 @@ public class ServerService {
 				if (key == 1)
 				{
 					Server request = new Server(serverUrl, serverStatus, new Date(), null, sleepInterval);
-					serverMonitoring.put(key, request);
+					serverMonitoringResults.put(key, request);
 					key++;
 				} 
 				else if (key > 1) 
 				{
-					Server previousRequest = serverMonitoring.get(key - 1);
+					Server previousRequest = serverMonitoringResults.get(key - 1);
 
 					// Server Status other than 'READY'
 					if (!previousRequest.getStatus().equals(READY) 
-							&& previousRequest.getStopTime() != null) 
+							|| previousRequest.getStopTime() != null) 
 					{
 						Server request = new Server(serverUrl, serverStatus, new Date(), null, sleepInterval);
-						serverMonitoring.put(key, request);
+						serverMonitoringResults.put(key, request);
 						key++;
 					}
 				}
@@ -227,20 +233,21 @@ public class ServerService {
 				if(key == 1)
 				{
 					Server request = new Server(serverUrl, serverStatus, null, new Date(), sleepInterval);
-					serverMonitoring.put(key, request);
+					serverMonitoringResults.put(key, request);
 					key++;
 				}
 				else if(key > 1)
 				{
-					Server previousRequest = serverMonitoring.get(key - 1);
+					Server previousRequest = serverMonitoringResults.get(key - 1);
 					previousRequest.setStopTime(new Date());
+					//key++;
 				}
 			}
 		}
 	}
 
 	public Map<Integer, Server> getMonitoringResults() {
-		return serverMonitoring;
+		return serverMonitoringResults;
 	}
 
 }
