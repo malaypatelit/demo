@@ -57,6 +57,7 @@ public class ServerService {
 	 */
 	public void stopMonitoring() {
 		sm.setExecuteThread(false);
+		sm.collectServerStatus("STOP");
 		t1.stop();
 		sm.setServerUrl(null);
 		sm.setSleepInterval(0);
